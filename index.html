@@ -8,71 +8,105 @@ body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f8; color: #1
 header { background: #111827; color: white; padding: 24px 40px; }
 .container { padding: 30px 40px; }
 .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
-textarea { width: 100%; height: 180px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
+textarea { width: 100%; height: 240px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
 button { margin-top: 10px; padding: 12px 16px; background: #111827; color: white; border: none; border-radius: 8px; cursor: pointer; }
 .grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; }
 .tag { display: inline-block; background: #e5e7eb; padding: 7px 12px; border-radius: 20px; margin: 4px; }
-.priority { font-size: 28px; font-weight: bold; color: #e11d48; }
+.priority-high { color: #e11d48; font-weight: bold; }
+.priority-medium { color: #d97706; font-weight: bold; }
+.priority-low { color: #059669; font-weight: bold; }
 .hidden { display: none; }
+.issue { border-left: 5px solid #111827; padding-left: 14px; margin-bottom: 16px; }
+.alert { background: #fff1f2; border-left: 5px solid #e11d48; padding: 12px; margin-bottom: 10px; border-radius: 8px; }
+.postbox { background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
 </style>
 </head>
 
 <body>
 <header>
   <h1>Terézváros Radar</h1>
-  <p>AI-alapú közéleti Facebook-poszt elemző MVP</p>
+  <p>Több közéleti Facebook-poszt AI-alapú vezetői elemzése</p>
 </header>
 
 <div class="container">
+
   <div class="card">
-    <h2>Facebook-poszt szövegének elemzése</h2>
-    <p>Másold be ide egy nyilvános Facebook-poszt szövegét.</p>
-    <textarea id="postText" placeholder="Ide másold a poszt szövegét..."></textarea>
+    <h2>Több poszt elemzése</h2>
+    <p>Másolj be több Facebook-posztot. A posztokat válaszd el három kötőjellel: <strong>---</strong></p>
+    <textarea id="postsText" placeholder="1. poszt szövege...
+
+---
+
+2. poszt szövege...
+
+---
+
+3. poszt szövege..."></textarea>
     <br>
-    <button onclick="analyzePost()">Elemzés indítása</button>
+    <button onclick="analyzePosts()">Radar elemzés indítása</button>
   </div>
 
   <div id="loading" class="card hidden">Elemzés folyamatban...</div>
 
   <div id="dashboard" class="hidden">
+
+    <div class="card">
+      <h2>Vezetői összefoglaló</h2>
+      <p id="executive_summary"></p>
+    </div>
+
     <div class="grid">
       <div>
         <div class="card">
-          <h2>Vezetői összefoglaló</h2>
-          <p id="summary"></p>
+          <h2>Legfontosabb ügyek</h2>
+          <div id="top_issues"></div>
         </div>
 
         <div class="card">
-          <h2>Javasolt intézkedések</h2>
-          <ol id="actions"></ol>
+          <h2>Javasolt polgármesteri teendők</h2>
+          <ol id="recommended_actions"></ol>
+        </div>
+
+        <div class="card">
+          <h2>Egyes posztok elemzése</h2>
+          <div id="individual_posts"></div>
         </div>
       </div>
 
       <div>
         <div class="card">
-          <h2>Prioritás</h2>
-          <div id="priority" class="priority"></div>
+          <h2>Összhangulat</h2>
+          <p id="overall_sentiment"></p>
         </div>
 
         <div class="card">
-          <h2>Hangulat</h2>
-          <p id="sentiment"></p>
+          <h2>Korai riasztások</h2>
+          <div id="urgent_alerts"></div>
         </div>
 
         <div class="card">
-          <h2>Fő témák</h2>
-          <div id="topics"></div>
+          <h2>Közös témák</h2>
+          <div id="common_topics"></div>
         </div>
       </div>
     </div>
   </div>
 
   <div id="error" class="card hidden"></div>
+
 </div>
 
 <script>
-async function analyzePost() {
-  const postText = document.getElementById("postText").value;
+function priorityClass(priority) {
+  const p = (priority || "").toLowerCase();
+  if (p.includes("magas")) return "priority-high";
+  if (p.includes("közepes")) return "priority-medium";
+  if (p.includes("alacsony")) return "priority-low";
+  return "";
+}
+
+async function analyzePosts() {
+  const postsText = document.getElementById("postsText").value;
   const loading = document.getElementById("loading");
   const dashboard = document.getElementById("dashboard");
   const errorBox = document.getElementById("error");
@@ -80,8 +114,8 @@ async function analyzePost() {
   dashboard.classList.add("hidden");
   errorBox.classList.add("hidden");
 
-  if (!postText || postText.length < 10) {
-    errorBox.textContent = "Kérlek, másolj be legalább néhány mondatnyi posztszöveget.";
+  if (!postsText || postsText.length < 20) {
+    errorBox.textContent = "Kérlek, másolj be legalább két rövid posztot.";
     errorBox.classList.remove("hidden");
     return;
   }
@@ -92,7 +126,7 @@ async function analyzePost() {
     const response = await fetch("/api/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ postText })
+      body: JSON.stringify({ postsText })
     });
 
     const data = await response.json();
@@ -106,26 +140,64 @@ async function analyzePost() {
       parsed = JSON.parse(cleaned);
     }
 
-    document.getElementById("summary").textContent = parsed.summary || "";
+    document.getElementById("executive_summary").textContent = parsed.executive_summary || "";
+    document.getElementById("overall_sentiment").textContent = parsed.overall_sentiment || "";
 
-    document.getElementById("priority").textContent = parsed.priority || "";
-    document.getElementById("sentiment").textContent = parsed.sentiment || "";
+    const issuesBox = document.getElementById("top_issues");
+    issuesBox.innerHTML = "";
+    (parsed.top_issues || []).forEach(item => {
+      const div = document.createElement("div");
+      div.className = "issue";
+      div.innerHTML = `
+        <h3>${item.issue || ""}</h3>
+        <p>${item.why_it_matters || ""}</p>
+        <p class="${priorityClass(item.priority)}">Prioritás: ${item.priority || ""}</p>
+      `;
+      issuesBox.appendChild(div);
+    });
 
-    const topicsBox = document.getElementById("topics");
+    const actionsList = document.getElementById("recommended_actions");
+    actionsList.innerHTML = "";
+    (parsed.recommended_actions || []).forEach(action => {
+      const li = document.createElement("li");
+      li.textContent = action;
+      actionsList.appendChild(li);
+    });
+
+    const alertsBox = document.getElementById("urgent_alerts");
+    alertsBox.innerHTML = "";
+    if ((parsed.urgent_alerts || []).length === 0) {
+      alertsBox.textContent = "Nincs azonnali riasztás.";
+    } else {
+      (parsed.urgent_alerts || []).forEach(alert => {
+        const div = document.createElement("div");
+        div.className = "alert";
+        div.textContent = alert;
+        alertsBox.appendChild(div);
+      });
+    }
+
+    const topicsBox = document.getElementById("common_topics");
     topicsBox.innerHTML = "";
-    (parsed.topics || []).forEach(topic => {
+    (parsed.common_topics || []).forEach(topic => {
       const span = document.createElement("span");
       span.className = "tag";
       span.textContent = topic;
       topicsBox.appendChild(span);
     });
 
-    const actionsList = document.getElementById("actions");
-    actionsList.innerHTML = "";
-    (parsed.recommended_actions || []).forEach(action => {
-      const li = document.createElement("li");
-      li.textContent = action;
-      actionsList.appendChild(li);
+    const postsBox = document.getElementById("individual_posts");
+    postsBox.innerHTML = "";
+    (parsed.individual_post_analysis || []).forEach(post => {
+      const div = document.createElement("div");
+      div.className = "postbox";
+      div.innerHTML = `
+        <h3>Poszt ${post.post_number || ""}</h3>
+        <p>${post.summary || ""}</p>
+        <p>Hangulat: ${post.sentiment || ""}</p>
+        <p class="${priorityClass(post.priority)}">Prioritás: ${post.priority || ""}</p>
+      `;
+      postsBox.appendChild(div);
     });
 
     dashboard.classList.remove("hidden");
