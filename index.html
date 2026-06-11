@@ -1,49 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="hu">
 <head>
 <meta charset="UTF-8">
-<title>Közéleti Radar MVP</title>
+<title>Terézváros Radar MVP</title>
 <style>
 body {
-    font-family: Arial;
-    margin: 20px;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f6f8;
+    color: #1f2933;
 }
 
-.post {
-    border: 1px solid #ccc;
-    padding: 15px;
-    margin-bottom: 15px;
+header {
+    background: #111827;
+    color: white;
+    padding: 24px 40px;
+}
+
+.container {
+    padding: 30px 40px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1.4fr 1fr;
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+}
+
+.hot {
+    border-left: 6px solid #e11d48;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
 }
 
-.summary {
-    background: #f5f5f5;
-    padding: 10px;
+button {
     margin-top: 10px;
+    padding: 12px 16px;
+    background: #111827;
+    color: white;
+    border: none;
+    border-radius: 8px;
+}
+
+.tag {
+    display: inline-block;
+    background: #e5e7eb;
+    padding: 6px 10px;
+    border-radius: 20px;
+    margin: 4px;
+    font-size: 14px;
+}
+
+.priority {
+    font-size: 28px;
+    font-weight: bold;
+    color: #e11d48;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Közéleti Radar</h1>
+<header>
+    <h1>Terézváros Radar</h1>
+    <p>Lakossági hangulatfigyelő és közéleti Facebook-poszt elemző MVP</p>
+</header>
 
-<div class="post">
-    <h2>Magyar Péter</h2>
-    <p>Facebook poszt helye</p>
+<div class="container">
 
-    <div class="summary">
-        AI összefoglaló
+    <div class="card hot">
+        <h2>🔥 Legforróbb ügyek ma</h2>
+        <p><strong>1. Közterületi rend</strong> – erősödő lakossági panaszok parkolásról, zajról és éjszakai közterületi jelenlétről.</p>
+        <p><strong>2. Lakhatás</strong> – növekvő érzékenység albérletárak és rövid távú lakáskiadás miatt.</p>
+        <p><strong>3. Közlekedés</strong> – kerékpársávok, parkolóhelyek és forgalomcsillapítás körüli vita.</p>
     </div>
-</div>
 
-<div class="post">
-    <h2>Karácsony Gergely</h2>
-    <p>Facebook poszt helye</p>
+    <div class="grid">
 
-    <div class="summary">
-        AI összefoglaló
+        <div>
+            <div class="card">
+                <h2>Facebook-poszt link beküldése</h2>
+                <p>Illeszd be egy nyilvános Facebook-poszt linkjét.</p>
+                <input type="text" placeholder="https://www.facebook.com/...">
+                <button>Elemzés indítása</button>
+                <p><small>Demóverzió: az automatikus elemzés következő fejlesztési lépés.</small></p>
+            </div>
+
+            <div class="card">
+                <h2>Figyelt szereplők</h2>
+                <p>Terézváros Önkormányzata</p>
+                <p>Polgármesteri oldal</p>
+                <p>Budapest Főváros</p>
+                <p>Országos közéleti szereplők</p>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <h2>AI összefoglaló – minta</h2>
+                <p>
+                A vizsgált Facebook-poszt egy helyi közterületi konfliktust emel ki. 
+                A hozzászólások alapján a lakosság egyszerre vár gyors rendészeti választ és hosszabb távú városüzemeltetési megoldást. 
+                A téma politikailag érzékeny, mert könnyen összekapcsolódhat a közbiztonság, parkolás és turizmus kérdésével.
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Fő témák</h2>
+                <span class="tag">közterület</span>
+                <span class="tag">parkolás</span>
+                <span class="tag">zaj</span>
+                <span class="tag">lakhatás</span>
+                <span class="tag">turizmus</span>
+            </div>
+
+            <div class="card">
+                <h2>Hangulatbecslés</h2>
+                <p>Negatív: 58%</p>
+                <p>Semleges: 31%</p>
+                <p>Pozitív: 11%</p>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <h2>Vezetői prioritás</h2>
+                <div class="priority">Magas</div>
+                <p>A téma gyors politikai és kommunikációs választ igényelhet.</p>
+            </div>
+
+            <div class="card">
+                <h2>Javasolt polgármesteri teendők</h2>
+                <ol>
+                    <li>Gyors tényellenőrzés a hivatalnál.</li>
+                    <li>Rövid, empatikus Facebook-válasz.</li>
+                    <li>Kapcsolódó kerületi intézkedések bemutatása.</li>
+                    <li>Ha nő az aktivitás, külön poszt vagy videó.</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h2>Korai jelzés</h2>
+                <p>Ha egy helyi ügy 2 órán belül kiugró kommentnövekedést mutat, a rendszer riasztást küldhet.</p>
+            </div>
+        </div>
+
     </div>
+
 </div>
 
 </body>
