@@ -4,10 +4,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { postText } = req.body;
+    const { postsText } = req.body;
 
-    if (!postText || postText.trim().length < 10) {
-      return res.status(400).json({ error: "Missing or too short post text" });
+    if (!postsText || postsText.trim().length < 20) {
+      return res.status(400).json({ error: "Missing or too short posts text" });
     }
 
     const response = await fetch("https://api.openai.com/v1/responses", {
@@ -19,19 +19,38 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "gpt-4.1-mini",
         input: `
-Elemezd az alábbi magyar közéleti Facebook-posztot önkormányzati döntéshozói szempontból.
+Elemezd az alábbi több magyar közéleti Facebook-posztot önkormányzati döntéshozói szempontból.
 
-Add vissza JSON formában:
+A posztok elválasztása lehet --- vagy egyszerű sortörés.
+
+Kizárólag érvényes JSON-t adj vissza, magyarázó szöveg nélkül, ebben a struktúrában:
+
 {
-  "summary": "3 mondatos összefoglaló",
-  "topics": ["téma1", "téma2", "téma3"],
-  "sentiment": "pozitív / semleges / negatív / vegyes",
-  "priority": "alacsony / közepes / magas",
-  "recommended_actions": ["teendő1", "teendő2", "teendő3"]
+  "executive_summary": "5-6 mondatos vezetői összefoglaló",
+  "top_issues": [
+    {
+      "issue": "ügy neve",
+      "why_it_matters": "miért fontos",
+      "priority": "alacsony / közepes / magas"
+    }
+  ],
+  "common_topics": ["téma1", "téma2", "téma3"],
+  "overall_sentiment": "pozitív / semleges / negatív / vegyes",
+  "urgent_alerts": ["riasztás1", "riasztás2"],
+  "recommended_actions": ["teendő1", "teendő2", "teendő3"],
+  "individual_post_analysis": [
+    {
+      "post_number": 1,
+      "summary": "rövid összefoglaló",
+      "topics": ["téma1", "téma2"],
+      "sentiment": "pozitív / semleges / negatív / vegyes",
+      "priority": "alacsony / közepes / magas"
+    }
+  ]
 }
 
-Poszt:
-${postText}
+Posztok:
+${postsText}
 `
       })
     });
@@ -40,9 +59,9 @@ ${postText}
 
     const text = data.output?.[0]?.content?.[0]?.text || "";
 
-    res.status(200).json({ result: text });
+    return res.status(200).json({ result: text });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 }
