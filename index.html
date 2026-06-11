@@ -4,111 +4,138 @@
 <meta charset="UTF-8">
 <title>Terézváros Radar MVP</title>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background: #f4f6f8;
-    color: #1f2933;
-}
-header {
-    background: #111827;
-    color: white;
-    padding: 24px 40px;
-}
-.container {
-    padding: 30px 40px;
-}
-.card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    margin-bottom: 20px;
-}
-textarea {
-    width: 100%;
-    height: 180px;
-    padding: 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-}
-button {
-    margin-top: 10px;
-    padding: 12px 16px;
-    background: #111827;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}
-pre {
-    white-space: pre-wrap;
-    background: #f1f5f9;
-    padding: 15px;
-    border-radius: 8px;
-}
+body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f8; color: #1f2933; }
+header { background: #111827; color: white; padding: 24px 40px; }
+.container { padding: 30px 40px; }
+.card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
+textarea { width: 100%; height: 180px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
+button { margin-top: 10px; padding: 12px 16px; background: #111827; color: white; border: none; border-radius: 8px; cursor: pointer; }
+.grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; }
+.tag { display: inline-block; background: #e5e7eb; padding: 7px 12px; border-radius: 20px; margin: 4px; }
+.priority { font-size: 28px; font-weight: bold; color: #e11d48; }
+.hidden { display: none; }
 </style>
 </head>
 
 <body>
-
 <header>
-    <h1>Terézváros Radar</h1>
-    <p>AI-alapú közéleti Facebook-poszt elemző MVP</p>
+  <h1>Terézváros Radar</h1>
+  <p>AI-alapú közéleti Facebook-poszt elemző MVP</p>
 </header>
 
 <div class="container">
+  <div class="card">
+    <h2>Facebook-poszt szövegének elemzése</h2>
+    <p>Másold be ide egy nyilvános Facebook-poszt szövegét.</p>
+    <textarea id="postText" placeholder="Ide másold a poszt szövegét..."></textarea>
+    <br>
+    <button onclick="analyzePost()">Elemzés indítása</button>
+  </div>
 
-    <div class="card">
-        <h2>Facebook-poszt szövegének elemzése</h2>
-        <p>Másold be ide egy nyilvános Facebook-poszt szövegét.</p>
+  <div id="loading" class="card hidden">Elemzés folyamatban...</div>
 
-        <textarea id="postText" placeholder="Ide másold a poszt szövegét..."></textarea>
-        <br>
-        <button onclick="analyzePost()">Elemzés indítása</button>
+  <div id="dashboard" class="hidden">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2>Vezetői összefoglaló</h2>
+          <p id="summary"></p>
+        </div>
+
+        <div class="card">
+          <h2>Javasolt intézkedések</h2>
+          <ol id="actions"></ol>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <h2>Prioritás</h2>
+          <div id="priority" class="priority"></div>
+        </div>
+
+        <div class="card">
+          <h2>Hangulat</h2>
+          <p id="sentiment"></p>
+        </div>
+
+        <div class="card">
+          <h2>Fő témák</h2>
+          <div id="topics"></div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <div class="card">
-        <h2>AI elemzés eredménye</h2>
-        <pre id="result">Itt jelenik meg az összefoglaló, témák, hangulat és javasolt teendők.</pre>
-    </div>
-
+  <div id="error" class="card hidden"></div>
 </div>
 
 <script>
 async function analyzePost() {
-    const postText = document.getElementById("postText").value;
-    const resultBox = document.getElementById("result");
+  const postText = document.getElementById("postText").value;
+  const loading = document.getElementById("loading");
+  const dashboard = document.getElementById("dashboard");
+  const errorBox = document.getElementById("error");
 
-    if (!postText || postText.length < 10) {
-        resultBox.textContent = "Kérlek, másolj be legalább néhány mondatnyi posztszöveget.";
-        return;
-    }
+  dashboard.classList.add("hidden");
+  errorBox.classList.add("hidden");
 
-    resultBox.textContent = "Elemzés folyamatban...";
+  if (!postText || postText.length < 10) {
+    errorBox.textContent = "Kérlek, másolj be legalább néhány mondatnyi posztszöveget.";
+    errorBox.classList.remove("hidden");
+    return;
+  }
 
+  loading.classList.remove("hidden");
+
+  try {
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postText })
+    });
+
+    const data = await response.json();
+    loading.classList.add("hidden");
+
+    let parsed;
     try {
-        const response = await fetch("/api/analyze", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ postText })
-        });
-
-        const data = await response.json();
-
-        if (data.result) {
-            resultBox.textContent = data.result;
-        } else {
-            resultBox.textContent = "Hiba történt: " + JSON.stringify(data);
-        }
-
-    } catch (error) {
-        resultBox.textContent = "Kapcsolódási hiba: " + error.message;
+      parsed = JSON.parse(data.result);
+    } catch {
+      const cleaned = data.result.replace(/```json|```/g, "").trim();
+      parsed = JSON.parse(cleaned);
     }
+
+    document.getElementById("summary").textContent = parsed.summary || "";
+
+    document.getElementById("priority").textContent = parsed.priority || "";
+    document.getElementById("sentiment").textContent = parsed.sentiment || "";
+
+    const topicsBox = document.getElementById("topics");
+    topicsBox.innerHTML = "";
+    (parsed.topics || []).forEach(topic => {
+      const span = document.createElement("span");
+      span.className = "tag";
+      span.textContent = topic;
+      topicsBox.appendChild(span);
+    });
+
+    const actionsList = document.getElementById("actions");
+    actionsList.innerHTML = "";
+    (parsed.recommended_actions || []).forEach(action => {
+      const li = document.createElement("li");
+      li.textContent = action;
+      actionsList.appendChild(li);
+    });
+
+    dashboard.classList.remove("hidden");
+
+  } catch (error) {
+    loading.classList.add("hidden");
+    errorBox.textContent = "Hiba történt: " + error.message;
+    errorBox.classList.remove("hidden");
+  }
 }
 </script>
-
 </body>
 </html>
