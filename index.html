@@ -10,23 +10,14 @@ body {
     background: #f4f6f8;
     color: #1f2933;
 }
-
 header {
     background: #111827;
     color: white;
     padding: 24px 40px;
 }
-
 .container {
     padding: 30px 40px;
 }
-
-.grid {
-    display: grid;
-    grid-template-columns: 1.1fr 1.4fr 1fr;
-    gap: 20px;
-}
-
 .card {
     background: white;
     border-radius: 12px;
@@ -34,18 +25,13 @@ header {
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     margin-bottom: 20px;
 }
-
-.hot {
-    border-left: 6px solid #e11d48;
-}
-
-input {
+textarea {
     width: 100%;
+    height: 180px;
     padding: 12px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
 }
-
 button {
     margin-top: 10px;
     padding: 12px 16px;
@@ -53,21 +39,13 @@ button {
     color: white;
     border: none;
     border-radius: 8px;
+    cursor: pointer;
 }
-
-.tag {
-    display: inline-block;
-    background: #e5e7eb;
-    padding: 6px 10px;
-    border-radius: 20px;
-    margin: 4px;
-    font-size: 14px;
-}
-
-.priority {
-    font-size: 28px;
-    font-weight: bold;
-    color: #e11d48;
+pre {
+    white-space: pre-wrap;
+    background: #f1f5f9;
+    padding: 15px;
+    border-radius: 8px;
 }
 </style>
 </head>
@@ -76,91 +54,61 @@ button {
 
 <header>
     <h1>Terézváros Radar</h1>
-    <p>Lakossági hangulatfigyelő és közéleti Facebook-poszt elemző MVP</p>
+    <p>AI-alapú közéleti Facebook-poszt elemző MVP</p>
 </header>
 
 <div class="container">
 
-    <div class="card hot">
-        <h2>🔥 Legforróbb ügyek ma</h2>
-        <p><strong>1. Közterületi rend</strong> – erősödő lakossági panaszok parkolásról, zajról és éjszakai közterületi jelenlétről.</p>
-        <p><strong>2. Lakhatás</strong> – növekvő érzékenység albérletárak és rövid távú lakáskiadás miatt.</p>
-        <p><strong>3. Közlekedés</strong> – kerékpársávok, parkolóhelyek és forgalomcsillapítás körüli vita.</p>
+    <div class="card">
+        <h2>Facebook-poszt szövegének elemzése</h2>
+        <p>Másold be ide egy nyilvános Facebook-poszt szövegét.</p>
+
+        <textarea id="postText" placeholder="Ide másold a poszt szövegét..."></textarea>
+        <br>
+        <button onclick="analyzePost()">Elemzés indítása</button>
     </div>
 
-    <div class="grid">
-
-        <div>
-            <div class="card">
-                <h2>Facebook-poszt link beküldése</h2>
-                <p>Illeszd be egy nyilvános Facebook-poszt linkjét.</p>
-                <input type="text" placeholder="https://www.facebook.com/...">
-                <button>Elemzés indítása</button>
-                <p><small>Demóverzió: az automatikus elemzés következő fejlesztési lépés.</small></p>
-            </div>
-
-            <div class="card">
-                <h2>Figyelt szereplők</h2>
-                <p>Terézváros Önkormányzata</p>
-                <p>Polgármesteri oldal</p>
-                <p>Budapest Főváros</p>
-                <p>Országos közéleti szereplők</p>
-            </div>
-        </div>
-
-        <div>
-            <div class="card">
-                <h2>AI összefoglaló – minta</h2>
-                <p>
-                A vizsgált Facebook-poszt egy helyi közterületi konfliktust emel ki. 
-                A hozzászólások alapján a lakosság egyszerre vár gyors rendészeti választ és hosszabb távú városüzemeltetési megoldást. 
-                A téma politikailag érzékeny, mert könnyen összekapcsolódhat a közbiztonság, parkolás és turizmus kérdésével.
-                </p>
-            </div>
-
-            <div class="card">
-                <h2>Fő témák</h2>
-                <span class="tag">közterület</span>
-                <span class="tag">parkolás</span>
-                <span class="tag">zaj</span>
-                <span class="tag">lakhatás</span>
-                <span class="tag">turizmus</span>
-            </div>
-
-            <div class="card">
-                <h2>Hangulatbecslés</h2>
-                <p>Negatív: 58%</p>
-                <p>Semleges: 31%</p>
-                <p>Pozitív: 11%</p>
-            </div>
-        </div>
-
-        <div>
-            <div class="card">
-                <h2>Vezetői prioritás</h2>
-                <div class="priority">Magas</div>
-                <p>A téma gyors politikai és kommunikációs választ igényelhet.</p>
-            </div>
-
-            <div class="card">
-                <h2>Javasolt polgármesteri teendők</h2>
-                <ol>
-                    <li>Gyors tényellenőrzés a hivatalnál.</li>
-                    <li>Rövid, empatikus Facebook-válasz.</li>
-                    <li>Kapcsolódó kerületi intézkedések bemutatása.</li>
-                    <li>Ha nő az aktivitás, külön poszt vagy videó.</li>
-                </ol>
-            </div>
-
-            <div class="card">
-                <h2>Korai jelzés</h2>
-                <p>Ha egy helyi ügy 2 órán belül kiugró kommentnövekedést mutat, a rendszer riasztást küldhet.</p>
-            </div>
-        </div>
-
+    <div class="card">
+        <h2>AI elemzés eredménye</h2>
+        <pre id="result">Itt jelenik meg az összefoglaló, témák, hangulat és javasolt teendők.</pre>
     </div>
 
 </div>
+
+<script>
+async function analyzePost() {
+    const postText = document.getElementById("postText").value;
+    const resultBox = document.getElementById("result");
+
+    if (!postText || postText.length < 10) {
+        resultBox.textContent = "Kérlek, másolj be legalább néhány mondatnyi posztszöveget.";
+        return;
+    }
+
+    resultBox.textContent = "Elemzés folyamatban...";
+
+    try {
+        const response = await fetch("/api/analyze", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ postText })
+        });
+
+        const data = await response.json();
+
+        if (data.result) {
+            resultBox.textContent = data.result;
+        } else {
+            resultBox.textContent = "Hiba történt: " + JSON.stringify(data);
+        }
+
+    } catch (error) {
+        resultBox.textContent = "Kapcsolódási hiba: " + error.message;
+    }
+}
+</script>
 
 </body>
 </html>
